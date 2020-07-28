@@ -4,6 +4,8 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openqa.selenium.By;
+import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import pages.Menu;
@@ -18,7 +20,12 @@ import java.text.ParseException;
 public class AddclientTest extends DoLogin {
 
     @Test (dataProvider = "getData")
-    public void addClienttest(String name,String surname,String language,String add1,String add2,String city,String state,String zip,String country,String gender,String birthdate,String phone,String faxNumber,String Mob,String email,String web,String vat,String tax) throws ParseException {
+    public void addClienttest(String name,String surname,String language,String add1,
+                              String add2,String city,String state,String zip,
+                              String country,String gender,String birthdate,
+                              String phone,String faxNumber,String Mob,String email,
+                              String web,String vat,String tax, String expected
+    ,String xpathActual) throws ParseException {
         Menu menu = new Menu(driver);
         menu.clickAddclient();
 
@@ -44,6 +51,24 @@ public class AddclientTest extends DoLogin {
         addClient.setTxtTaxesCode(tax);
         addClient.clickBtnSave();
 
+
+        System.out.println("Expected result for cilent:"+name);
+        System.out.println(expected);
+
+
+        String actual ="";
+        try {
+
+
+            actual = driver.findElement(By.xpath(xpathActual)).getText();
+        }
+        catch (Exception e)
+        {
+
+        }
+        Assert.assertEquals(actual,expected,"Invalid msg");
+
+
     }
 
     @DataProvider
@@ -54,12 +79,13 @@ public class AddclientTest extends DoLogin {
 
         int rowcount = sheet.getPhysicalNumberOfRows();
 
-        Object[][] data = new Object[rowcount-1][18];
+        Object[][] data = new Object[rowcount-1][20];
 
+        // data[i][18] --> expected result
         for(int i=0;i<rowcount-1; i++ )
         {
             XSSFRow row = sheet.getRow(i+1);
-            for (int j=0;j<18;j++)
+            for (int j=0;j<20;j++)
             {
                 XSSFCell element = row.getCell(j);
                 data[i][j] =  element.toString().trim();

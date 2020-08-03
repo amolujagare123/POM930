@@ -13,7 +13,7 @@ import static utilities.ConfigReader.getUrl;
 
 public class OpenUrl {
 
-    protected WebDriver driver;
+    protected static WebDriver driver;
 
     @BeforeClass
     public void openUrl() throws IOException {

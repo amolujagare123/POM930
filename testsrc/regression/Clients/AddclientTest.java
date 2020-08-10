@@ -1,11 +1,16 @@
 package regression.Clients;
 
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openqa.selenium.By;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import pages.Menu;
@@ -17,7 +22,36 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 
+import static utilities.Myscreenshots.getScreenshot;
+
 public class AddclientTest extends DoLogin {
+
+    ExtentReports extent;
+    ExtentSparkReporter reporter;
+    static int count;
+
+    @BeforeClass
+    public void initReport()
+    {
+        count =1;
+        reporter = new ExtentSparkReporter("Report\\report.html");
+
+        reporter.config().setDocumentTitle("Invoice plane tests");
+        reporter.config().setReportName("POM test results");
+
+
+        extent  = new ExtentReports();
+
+         extent.attachReporter(reporter);
+
+        extent.setSystemInfo("Project name","Invoice plane");
+        extent.setSystemInfo("Developere name","praful");
+        extent.setSystemInfo("Testers Name","Amol");
+
+    }
+
+
+
 
     @Test (dataProvider = "getData")
     public void addClienttest(String name,String surname,String language,String add1,
@@ -25,20 +59,33 @@ public class AddclientTest extends DoLogin {
                               String country,String gender,String birthdate,
                               String phone,String faxNumber,String Mob,String email,
                               String web,String vat,String tax, String expected
-    ,String xpathActual) throws ParseException {
+    ,String xpathActual) throws ParseException, IOException {
+
+
+        ExtentTest test = extent.createTest("addClientTest00"+count++);
+
         Menu menu = new Menu(driver);
         menu.clickAddclient();
+
+        test.info("Add client page is opened");
 
         AddClient addClient = new AddClient(driver);
         addClient.setTxtClientName(name);
         addClient.setTxtSurname(surname);
+        test.info("Surname is entered");
         addClient.setLanguage(language);
         addClient.setTxtAdd1(add1);
+
+        test.info("address is entered");
+
         addClient.setTxtAdd2(add2);
         addClient.setTxtCity(city);
         addClient.setTxtState(state);
         addClient.setTxtZip(zip);
         addClient.setCountry(country);
+
+        test.info("country is entered");
+
         addClient.setGender(gender);
         addClient.setTxtDOB(birthdate);
         //addClient.setDobUsingJS("11/27/1985");
@@ -51,6 +98,7 @@ public class AddclientTest extends DoLogin {
         addClient.setTxtTaxesCode(tax);
         addClient.clickBtnSave();
 
+        test.info("submit button is clicked");
 
         System.out.println("Expected result for cilent:"+name);
         System.out.println(expected);
@@ -60,16 +108,39 @@ public class AddclientTest extends DoLogin {
         try {
 
 
-            actual = driver.findElement(By.xpath(xpathActual)).getText();
+             actual = driver.findElement(By.xpath(xpathActual)).getText();
+
+
         }
         catch (Exception e)
         {
 
         }
-        Assert.assertEquals(actual,expected,"Invalid msg");
+
+        try {
+
+            Assert.assertEquals(actual, expected, "Invalid msg");
+            test.pass("Test is passed & screenshot below");
+            test.addScreenCaptureFromPath("./screenshots/"+getScreenshot(driver));
+        }
+        catch ( AssertionError e)
+        {
+            test.fail("This test is failed because");
+            test.fail(e.getMessage());
+            test.fail("screenshot below");
+            test.addScreenCaptureFromPath("./screenshots/"+getScreenshot(driver));
+
+        }
 
 
     }
+
+    @AfterClass
+    public void afterReports()
+    {
+        extent.flush();
+    }
+
 
     @DataProvider
     public Object[][] getData() throws IOException {
